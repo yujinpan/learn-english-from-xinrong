@@ -1,0 +1,5 @@
+.idea
+.vitepress/cache
+.vitepress/dist
+courses
+node_modules

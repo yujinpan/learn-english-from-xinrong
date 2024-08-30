@@ -1,0 +1,13 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "Node"
+  },
+  "ts-node": {
+    "esm": true,
+    "files": true,
+    "transpileOnly": true,
+    "experimentalResolver": true,
+    "experimentalSpecifierResolution": "node"
+  }
+}
