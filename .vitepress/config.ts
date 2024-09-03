@@ -22,6 +22,7 @@ export default defineConfig({
       '/courses/': [
         {
           text: 'Courses',
+          base: '/courses/',
           items: (function () {
             return getSources().map((item) => ({
               text: item.name,
