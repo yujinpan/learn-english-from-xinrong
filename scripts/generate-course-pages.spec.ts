@@ -49,7 +49,7 @@ so I have to do it
       `微信：xingrong-english 公众号：Hi要大声说出来
 
 <script setup>
-const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"like","kk":"/laɪk/"},{"zh":"我今天必须做这件事情","en":"I have ́ to do it today","kk":"/aɪ/ /hæv/ /tə/ /du/ /ɪt/ /tə'de/"},{"zh":"所以","en":"so","kk":"/so/"},{"zh":"它是重要的对我来说 \\n所以我必须做这件事 \\nIt","en":"is important for me  \\nso I have to do it","kk":"/ɪt/ /ɪz/ /ɪm'pɔrtnt/ /fɝ/ /mi/  \\n/so/ /aɪ/ /hæv/ /tə/ /du/ /ɪt/"}]
+const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"like","kk":"/laɪk/"},{"zh":"我今天必须做这件事情","en":"I have ́ to do it today","kk":"/aɪ/ /hæv/ /tə/ /du/ /ɪt/ /tə'de/"},{"zh":"所以","en":"so","kk":"/so/"},{"zh":"它是重要的对我来说 \\n所以我必须做这件事","en":"It is important for me  \\nso I have to do it","kk":"/ɪt/ /ɪz/ /ɪm'pɔrtnt/ /fɝ/ /mi/  \\n/so/ /aɪ/ /hæv/ /tə/ /du/ /ɪt/"}]
 </script>
 
 <StatementGroup :data="statementData" />`,
@@ -125,7 +125,7 @@ we have studied English since
 想要 want wants wanted wanting wanted 
 `),
     ).toBe(`<script setup>
-const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"我们自从2020年以来(已经)\\n学习英文了 \\nwe","en":"have studied English since \\n2020","kk":"/wi/ /hæv/ /ˈstʌdid/ /ˈɪŋɡlɪʃ/ /sɪns/ \\n/'twɛnti/ /'twɛnti/"}]
+const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"我们自从2020年以来(已经)\\n学习英文了","en":"we have studied English since \\n2020","kk":"/wi/ /hæv/ /ˈstʌdid/ /ˈɪŋɡlɪʃ/ /sɪns/ \\n/'twɛnti/ /'twɛnti/"}]
 </script>
 
 <StatementGroup :data="statementData" />
