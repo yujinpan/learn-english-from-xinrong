@@ -12,7 +12,9 @@ build();
 function build() {
   const coursesPath = path.resolve(__dirname, '../courses');
 
-  fs.rmSync(coursesPath, { recursive: true });
+  if (fs.existsSync(coursesPath)) {
+    fs.rmSync(coursesPath, { recursive: true });
+  }
   fs.mkdirSync(coursesPath);
 
   const sources = getSources();
