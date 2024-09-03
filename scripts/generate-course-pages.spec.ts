@@ -29,7 +29,7 @@ describe('generate-course-pages', () => {
 我今`);
   });
 
-  it('readTable', () => {
+  it('readStatements', () => {
     expect(
       parseTxtToPage(`微信：xingrong-english 公众号：Hi要大声说出来
 
@@ -37,18 +37,101 @@ describe('generate-course-pages', () => {
 中文 英文 K.K.音标
 我 I /aɪ/
 喜欢 like /laɪk/
-我喜欢 I like /aɪ/ /laɪk/
-食物 the food /ðə/ /fud/
-我喜欢这个食物 I like the food /aɪ/ /laɪk//ðə/ /fud/
-不 don't /dont/`),
+我今天必须做这件事情 I have ́ to do it today /aɪ/ /hæv/ /tə/ /du/ /ɪt/ /tə'de/ 
+所以 so /so/ 
+它是重要的对我来说 
+所以我必须做这件事 
+It is important for me  
+so I have to do it 
+/ɪt/ /ɪz/ /ɪm'pɔrtnt/ /fɝ/ /mi/  
+/so/ /aɪ/ /hæv/ /tə/ /du/ /ɪt/ `),
     ).toBe(
       `微信：xingrong-english 公众号：Hi要大声说出来
 
 <script setup>
-const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"like","kk":"/laɪk/"},{"zh":"我喜欢","en":"I like","kk":"/aɪ/ /laɪk/"},{"zh":"食物","en":"the food","kk":"/ðə/ /fud/"},{"zh":"我喜欢这个食物","en":"I like the food","kk":"/aɪ/ /laɪk//ðə/ /fud/"},{"zh":"不","en":"don't","kk":"/dont/"}]
+const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"like","kk":"/laɪk/"},{"zh":"我今天必须做这件事情","en":"I have ́ to do it today","kk":"/aɪ/ /hæv/ /tə/ /du/ /ɪt/ /tə'de/"},{"zh":"所以","en":"so","kk":"/so/"},{"zh":"它是重要的对我来说 \\n所以我必须做这件事 \\nIt","en":"is important for me  \\nso I have to do it","kk":"/ɪt/ /ɪz/ /ɪm'pɔrtnt/ /fɝ/ /mi/  \\n/so/ /aɪ/ /hæv/ /tə/ /du/ /ɪt/"}]
 </script>
 
 <StatementGroup :data="statementData" />`,
     );
+  });
+
+  it('readStatements new line', () => {
+    expect(
+      parseTxtToPage(`微信：xingrong-english 公众号：Hi要大声说出来
+
+
+中文 英文 K.K.音标
+我(已经)在那个公司工作了三
+年了 
+I have worked at that company 
+for three years 
+/aɪ/ /hæv/ /wɝkt/ /ət/ /ðæt/ /ˈkʌmpəni/ 
+/fɚ/ /θri/ /jɪrz/ `),
+    ).toBe(
+      `微信：xingrong-english 公众号：Hi要大声说出来
+
+<script setup>
+const statementData = [{"zh":"我(已经)在那个公司工作了三\\n年了","en":"I have worked at that company \\nfor three years","kk":"/aɪ/ /hæv/ /wɝkt/ /ət/ /ðæt/ /ˈkʌmpəni/ \\n/fɚ/ /θri/ /jɪrz/"}]
+</script>
+
+<StatementGroup :data="statementData" />`,
+    );
+  });
+
+  it('readTable', () => {
+    expect(
+      parseTxtToPage(`
+中文 英文 K.K.音标
+我 I /aɪ/
+喜欢 like /laɪk/
+      
+中文 原形 第三人称单数 过去式 ing形式ed形式 \r
+想要 want wants wanted wanting wanted 
+喜欢 like likes liked liking liked 
+有；
+(+to )不得不 have has had having had 
+计划 plan plans planned planning planned 
+`),
+    ).toBe(`<script setup>
+const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"like","kk":"/laɪk/"}]
+</script>
+
+<StatementGroup :data="statementData" />
+
+|中文|原形|第三人称单数|过去式|ing形式|ed形式|
+|-|-|-|-|-|-|
+|想要|want|wants|wanted|wanting|wanted|
+|喜欢|like|likes|liked|liking|liked|
+|有；(+to)不得不|have|has|had|having|had|
+|计划|plan|plans|planned|planning|planned|`);
+  });
+
+  it('read statements and table', () => {
+    expect(
+      parseTxtToPage(`
+中文 英文 K.K.音标
+我 I /aɪ/ 
+我们自从2020年以来(已经)
+学习英文了 
+we have studied English since 
+2020 
+/wi/ /hæv/ /ˈstʌdid/ /ˈɪŋɡlɪʃ/ /sɪns/ 
+/'twɛnti/ /'twɛnti/ 
+----------------Page (6) Break----------------
+7 
+ 
+中文 原形 第三人称单数 过去式 ing形式ed形式 
+想要 want wants wanted wanting wanted 
+`),
+    ).toBe(`<script setup>
+const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"我们自从2020年以来(已经)\\n学习英文了 \\nwe","en":"have studied English since \\n2020","kk":"/wi/ /hæv/ /ˈstʌdid/ /ˈɪŋɡlɪʃ/ /sɪns/ \\n/'twɛnti/ /'twɛnti/"}]
+</script>
+
+<StatementGroup :data="statementData" />
+
+|中文|原形|第三人称单数|过去式|ing形式|ed形式|
+|-|-|-|-|-|-|
+|想要|want|wants|wanted|wanting|wanted|`);
   });
 });

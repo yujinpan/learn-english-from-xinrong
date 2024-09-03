@@ -1,4 +1,4 @@
-import glob from 'glob';
+import { sync } from 'glob';
 import { upperFirst } from 'lodash-es';
 import { fileURLToPath } from 'node:url';
 import path from 'path';
@@ -6,7 +6,7 @@ import path from 'path';
 export const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export function getSources() {
-  const files = glob.sync(path.resolve(__dirname, '../sources/*.pdf'));
+  const files = sync(path.resolve(__dirname, '../sources/*.pdf'));
 
   return files.map((item) => {
     const name = path.basename(item, path.extname(item));

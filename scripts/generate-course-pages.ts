@@ -12,7 +12,7 @@ build();
 function build() {
   const coursesPath = path.resolve(__dirname, '../courses');
 
-  fs.rmdirSync(coursesPath, { recursive: true });
+  fs.rmSync(coursesPath, { recursive: true });
   fs.mkdirSync(coursesPath);
 
   const sources = getSources();
@@ -40,9 +40,9 @@ function build() {
   );
 }
 
-function readPdfToTxt(pdf: string) {
+function readPdfToTxt(pdf: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const pdfParser = new PDFParser(this, 1);
+    const pdfParser = new PDFParser(undefined, true);
 
     pdfParser.on('pdfParser_dataError', (errData) =>
       reject(errData.parserError),
@@ -63,7 +63,7 @@ export function parseTxtToPage(txt: string) {
   while (index < txt.length) {
     if (isBreak(txt, index)) {
       index += readBreak(txt, index).length;
-    } else if (isStatements(txt, index)) {
+    } else if (isStatementsTitle(txt, index)) {
       const { result: result1, length } = readStatements(txt, index);
       result += result1;
       index += length;
@@ -81,6 +81,10 @@ export function parseTxtToPage(txt: string) {
       }
 
       index += space.length;
+    } else if (isTable(txt, index)) {
+      const table = readTable(txt, index);
+      result += table.result;
+      index += table.length;
     } else {
       result += txt[index];
       index++;
@@ -111,7 +115,7 @@ function readBreak(txt: string, index: number): string {
       if (!isSpace(txt, i)) {
         if (/\d/.test(txt[i])) {
           if (isSpace(txt, i + 1)) {
-            return findNotSpace(txt, i + 2);
+            return findNotSpace(txt, i + 1);
           }
         } else {
           return i;
@@ -124,15 +128,16 @@ function readBreak(txt: string, index: number): string {
 
 const tableTitle = '中文 英文 K.K.音标';
 
-function isStatements(txt: string, index: number): boolean {
+function isStatementsTitle(txt: string, index: number) {
   if (txt.slice(index, index + tableTitle.length) === tableTitle) {
     return true;
   }
 }
+
 function readStatements(
   txt: string,
   index: number,
-): { result: string; length: string } {
+): { result: string; length: number } {
   const data: { zh: string; en: string; kk: string }[] = [];
 
   let i: number;
@@ -140,7 +145,7 @@ function readStatements(
   for (i = index + tableTitle.length; i < txt.length; i++) {
     if (isBreak(txt, i)) {
       i += readBreak(txt, i).length - 1;
-    } else if (/\n/.test(txt, i - 1) && !isSpace(txt, i)) {
+    } else if (/\n/.test(txt[i - 1]) && !isSpace(txt, i)) {
       let current = i;
       try {
         const zh = readZh(txt, current);
@@ -163,13 +168,96 @@ function readStatements(
 const statementData = ${JSON.stringify(data)}
 </script>
 
-<StatementGroup :data="statementData" />`,
+<StatementGroup :data="statementData" />\n\n`,
     length: i - index,
   };
 }
 
-function isTable(txt: string, index: number): boolean {}
-function readTable(txt: string, index: number): string {}
+function isTable(txt: string, index: number) {
+  if (txt[index - 1] === '\n' && !isSpace(txt, index)) {
+    try {
+      const row1 = readTableRow(txt, index);
+      if (row1.result.length > 2) {
+        const row2 = readTableRow(txt, index + row1.length);
+        if (row2.result.length > 2) {
+          if (row1.result.length === row2.result.length) {
+            return true;
+          }
+        }
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+}
+function readTableRow(
+  txt: string,
+  index: number,
+): { result: string[]; length: number } {
+  let result = '';
+  for (let i = index; i < txt.length; i++) {
+    if (
+      (txt[i] === '\n' &&
+        (txt.slice(i - 2, i) === ' \r' || txt[i - 1] === ' ')) ||
+      (txt[i] === ' ' && i === txt.length - 1)
+    ) {
+      return {
+        result: result.trim().split(' '),
+        length: i - index + 1,
+      };
+    } else if (txt[i] === ' ' && txt[i + 1] === ')') {
+      continue;
+    } else if (txt[i] === '\n' || txt[i] === '\r') {
+      continue;
+    } else if (txt[i] !== ' ') {
+      if (isZh(txt, i - 1) && /[a-z]/i.test(txt[i])) {
+        result += ' ';
+      }
+    }
+
+    result += txt[i];
+  }
+  throw new Error(`Can not find TableRow ending: ${txt.slice(index)}`);
+}
+function readTable(
+  txt: string,
+  index: number,
+): { result: string; length: number } {
+  const { result: head, length } = readTableRow(txt, index);
+
+  const body: string[][] = [];
+  let i: number;
+  for (i = index + length; i < txt.length; i++) {
+    if (isBreak(txt, i)) {
+      i += readBreak(txt, i).length - 1;
+    } else {
+      try {
+        const { result, length } = readTableRow(txt, i);
+        if (result.length === head.length) {
+          body.push(result);
+          i += length - 1;
+        } else {
+          break;
+        }
+      } catch (e) {
+        break;
+      }
+    }
+  }
+
+  const tableHead = '|' + head.join('|') + '|\n';
+  const tableDivide = '|' + head.map(() => '-').join('|') + '|\n';
+  const tableBody = body
+    .map((item) => {
+      return '|' + item.join('|') + '|\n';
+    })
+    .join('');
+
+  return {
+    result: tableHead + tableDivide + tableBody,
+    length: i - index,
+  };
+}
 
 function isZh(txt: string, index: number) {
   // eslint-disable-next-line no-control-regex
@@ -178,7 +266,7 @@ function isZh(txt: string, index: number) {
 
 function readZh(txt: string, index: number) {
   for (let i = index; i < txt.length; i++) {
-    if (txt[i] === ' ') {
+    if ((txt[i - 1] === ' ' || txt[i - 1] === '\n') && /[a-z]/i.test(txt[i])) {
       return txt.slice(index, i);
     }
   }
@@ -186,12 +274,21 @@ function readZh(txt: string, index: number) {
 }
 
 function readEn(txt: string, index: number) {
+  let result = '';
   for (let i = index; i < txt.length; i++) {
-    if (/\//.test(txt[i])) {
-      return txt.slice(index, i);
+    // eslint-disable-next-line no-misleading-character-class
+    if (/[a-z'\s\w ́]/i.test(txt[i])) {
+      result += txt[i];
+    } else {
+      break;
     }
   }
-  throw new Error(`Can not find EN ending: ${txt.slice(index)}`);
+
+  if (!result.trim()) {
+    throw new Error(`Can not find EN ending: ${txt.slice(index)}`);
+  } else {
+    return result;
+  }
 }
 
 function readKk(txt: string, index: number, result = '') {
@@ -202,12 +299,15 @@ function readKk(txt: string, index: number, result = '') {
         result += txt.slice(index, endingIndex + 1);
         return readKk(txt, endingIndex + 1, result);
       } else {
-        return result;
+        break;
       }
-    } else if (!/\s/.test(txt[i])) {
-      return result;
+    } else if (!isSpace(txt, i)) {
+      break;
     }
   }
+
+  if (!result) throw new Error(`Can not find KK ending: ${txt.slice(index)}`);
+
   return result;
 
   function findEnding(txt: string, index: number) {
