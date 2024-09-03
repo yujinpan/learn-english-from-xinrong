@@ -4,7 +4,7 @@ import { getSources } from '../scripts/utils';
 
 export default defineConfig({
   base: '/learn-english-from-xinrong',
-  title: 'Learn English form Xinrong',
+  title: 'Learn English from Xinrong',
   description: 'This is a website that helps us review Xinrong video courses.',
   appearance: true,
   lastUpdated: true,
