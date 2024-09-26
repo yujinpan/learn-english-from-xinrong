@@ -79,6 +79,21 @@ const statementData = [{"zh":"我(已经)在那个公司工作了三\\n年了","
     );
   });
 
+  it('readStatements empty kk', () => {
+    expect(
+      parseTxtToPage(`
+中文 英文 K.K.音标
+星荣 Xingrong  
+我是星荣 I am Xingrong /aɪ/ /æm/ `),
+    ).toBe(
+      `<script setup>
+const statementData = [{"zh":"星荣","en":"Xingrong","kk":""},{"zh":"我是星荣","en":"I am Xingrong","kk":"/aɪ/ /æm/"}]
+</script>
+
+<StatementGroup :data="statementData" />`,
+    );
+  });
+
   it('readTable', () => {
     expect(
       parseTxtToPage(`

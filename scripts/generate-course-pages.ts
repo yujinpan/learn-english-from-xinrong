@@ -279,7 +279,7 @@ function readEn(txt: string, index: number) {
   let result = '';
   for (let i = index; i < txt.length; i++) {
     // eslint-disable-next-line no-misleading-character-class
-    if (/[a-z'\s\w ́]/i.test(txt[i])) {
+    if (/[a-z'\s\w ́]/i.test(txt[i]) && !isTwoSpaceNewLine(txt, i)) {
       result += txt[i];
     } else {
       break;
@@ -303,6 +303,9 @@ function readKk(txt: string, index: number, result = '') {
       } else {
         break;
       }
+    } else if (isTwoSpaceNewLine(txt, i)) {
+      result = ' ';
+      break;
     } else if (!isSpace(txt, i)) {
       break;
     }
@@ -321,6 +324,18 @@ function readKk(txt: string, index: number, result = '') {
 
 function isSpace(txt: string, index: number) {
   return /\s/.test(txt[index]);
+}
+
+function isSpaceNotEmpty(txt: string, index: number) {
+  return /[\f\n\r\t\v]/.test(txt[index]);
+}
+
+function isTwoSpace(txt: string, index: number) {
+  return txt.slice(index, index + 2) === '  ';
+}
+
+function isTwoSpaceNewLine(txt: string, index: number) {
+  return isTwoSpace(txt, index) && isSpaceNotEmpty(txt, index + 2);
 }
 
 function isSpaceLine(txt: string) {
