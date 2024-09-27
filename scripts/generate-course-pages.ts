@@ -182,10 +182,12 @@ function isTable(txt: string, index: number) {
     try {
       const row1 = readTableRow(txt, index);
       if (row1.result.length > 2) {
-        const row2 = readTableRow(txt, index + row1.length);
-        if (row2.result.length > 2) {
-          if (row1.result.length === row2.result.length) {
-            return true;
+        if (!isBreak(txt, index + row1.length)) {
+          const row2 = readTableRow(txt, index + row1.length);
+          if (row2.result.length > 2) {
+            if (row1.result.length === row2.result.length) {
+              return true;
+            }
           }
         }
       }
