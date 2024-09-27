@@ -162,6 +162,8 @@ function readStatements(
       } catch (e) {
         break;
       }
+    } else if (!isSpace(txt, i)) {
+      break;
     }
   }
 
@@ -279,7 +281,7 @@ function readEn(txt: string, index: number) {
   let result = '';
   for (let i = index; i < txt.length; i++) {
     // eslint-disable-next-line no-misleading-character-class
-    if (/[a-z'\s\w ́]/i.test(txt[i]) && !isTwoSpaceNewLine(txt, i)) {
+    if (/[a-z'\s\w ́]/i.test(txt[i])) {
       result += txt[i];
     } else {
       break;
@@ -295,7 +297,19 @@ function readEn(txt: string, index: number) {
 
 function readKk(txt: string, index: number, result = '') {
   for (let i = index; i < txt.length; i++) {
-    if (txt[i] === '/') {
+    if (isSpace(txt, i)) continue;
+
+    if (!result && txt[i] !== '/') {
+      if (isTwoSpaceNewLine(txt, i - 3)) {
+        return '';
+      } else if (isValid(txt, i)) {
+        // "/ju" or "ju/" is valid
+      } else {
+        break;
+      }
+    }
+
+    if (isValid(txt, i)) {
       const endingIndex = findEnding(txt, i + 1);
       if (endingIndex) {
         result += txt.slice(index, endingIndex + 1);
@@ -303,9 +317,6 @@ function readKk(txt: string, index: number, result = '') {
       } else {
         break;
       }
-    } else if (isTwoSpaceNewLine(txt, i)) {
-      result = ' ';
-      break;
     } else if (!isSpace(txt, i)) {
       break;
     }
@@ -317,7 +328,14 @@ function readKk(txt: string, index: number, result = '') {
 
   function findEnding(txt: string, index: number) {
     for (let i = index; i < txt.length; i++) {
-      if (txt[i] === '/') return i;
+      if (txt[i] === '/' || isSpace(txt, i) || i === txt.length - 1) return i;
+    }
+  }
+
+  function isValid(txt: string, index: number) {
+    for (let i = index; i < txt.length; i++) {
+      if (isSpace(txt, i)) return false;
+      if (txt[i] === '/') return true;
     }
   }
 }
@@ -331,7 +349,7 @@ function isSpaceNotEmpty(txt: string, index: number) {
 }
 
 function isTwoSpace(txt: string, index: number) {
-  return txt.slice(index, index + 2) === '  ';
+  return isSpace(txt, index) && isSpace(txt, index + 1);
 }
 
 function isTwoSpaceNewLine(txt: string, index: number) {

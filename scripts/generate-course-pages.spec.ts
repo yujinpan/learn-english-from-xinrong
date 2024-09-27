@@ -83,11 +83,57 @@ const statementData = [{"zh":"我(已经)在那个公司工作了三\\n年了","
     expect(
       parseTxtToPage(`
 中文 英文 K.K.音标
+我是 I am /aɪ/ /æm/ 
 星荣 Xingrong  
 我是星荣 I am Xingrong /aɪ/ /æm/ `),
     ).toBe(
       `<script setup>
-const statementData = [{"zh":"星荣","en":"Xingrong","kk":""},{"zh":"我是星荣","en":"I am Xingrong","kk":"/aɪ/ /æm/"}]
+const statementData = [{"zh":"我是","en":"I am","kk":"/aɪ/ /æm/"},{"zh":"星荣","en":"Xingrong","kk":""},{"zh":"我是星荣","en":"I am Xingrong","kk":"/aɪ/ /æm/"}]
+</script>
+
+<StatementGroup :data="statementData" />`,
+    );
+  });
+
+  it('readStatements missing kk', () => {
+    expect(
+      parseTxtToPage(`
+中文 英文 K.K.音标
+我是 I am /aɪ/ /æm`),
+    ).toBe(
+      `<script setup>
+const statementData = [{"zh":"我是","en":"I am","kk":"/aɪ/ /æm"}]
+</script>
+
+<StatementGroup :data="statementData" />`,
+    );
+  });
+
+  it('readStatements can read two space between kk', () => {
+    expect(
+      parseTxtToPage(`
+中文 英文 K.K.音标
+星荣 Xingrong  
+我是星荣 I am Xingrong /aɪ/  /æm/ `),
+    ).toBe(
+      `<script setup>
+const statementData = [{"zh":"星荣","en":"Xingrong","kk":""},{"zh":"我是星荣","en":"I am Xingrong","kk":"/aɪ/  /æm/"}]
+</script>
+
+<StatementGroup :data="statementData" />`,
+    );
+  });
+
+  it('readStatements can read kk with new line', () => {
+    expect(
+      parseTxtToPage(`
+中文 英文 K.K.音标
+星荣 Xingrong  
+我是星荣 I am Xingrong /aɪ/  
+/æm/ `),
+    ).toBe(
+      `<script setup>
+const statementData = [{"zh":"星荣","en":"Xingrong","kk":""},{"zh":"我是星荣","en":"I am Xingrong","kk":"/aɪ/  \\n/æm/"}]
 </script>
 
 <StatementGroup :data="statementData" />`,
