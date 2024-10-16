@@ -184,6 +184,9 @@ we have studied English since
  
 中文 原形 第三人称单数 过去式 ing形式ed形式 
 想要 want wants wanted wanting wanted 
+想要 want wants wanted wanting wanted 
+是 be（am） is was was was 
+是 be（is ） is was was was 
 `),
     ).toBe(`<script setup>
 const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"我们自从2020年以来(已经)\\n学习英文了","en":"we have studied English since \\n2020","kk":"/wi/ /hæv/ /ˈstʌdid/ /ˈɪŋɡlɪʃ/ /sɪns/ \\n/'twɛnti/ /'twɛnti/"}]
@@ -193,6 +196,9 @@ const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"我们自从202
 
 |中文|原形|第三人称单数|过去式|ing形式|ed形式|
 |-|-|-|-|-|-|
-|想要|want|wants|wanted|wanting|wanted|`);
+|想要|want|wants|wanted|wanting|wanted|
+|想要|want|wants|wanted|wanting|wanted|
+|是|be（am）|is|was|was|was|
+|是|be（is）|is|was|was|was|`);
   });
 });

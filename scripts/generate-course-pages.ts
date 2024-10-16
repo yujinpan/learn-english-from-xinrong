@@ -147,7 +147,11 @@ function readStatements(
   for (i = index + tableTitle.length; i < txt.length; i++) {
     if (isBreak(txt, i)) {
       i += readBreak(txt, i).length - 1;
-    } else if (/\n/.test(txt[i - 1]) && !isSpace(txt, i)) {
+    } else if (
+      /\n/.test(txt[i - 1]) &&
+      !isSpace(txt, i) &&
+      txt.slice(i, i + 5) !== '中文 原形'
+    ) {
       let current = i;
       try {
         const zh = readZh(txt, current);
@@ -178,21 +182,31 @@ const statementData = ${JSON.stringify(data)}
 }
 
 function isTable(txt: string, index: number) {
-  if (txt[index - 1] === '\n' && !isSpace(txt, index)) {
+  if (isSpaceLinePre(txt, index - 1) && !isSpace(txt, index)) {
     try {
-      const row1 = readTableRow(txt, index);
-      if (row1.result.length > 2) {
-        if (!isBreak(txt, index + row1.length)) {
-          const row2 = readTableRow(txt, index + row1.length);
-          if (row2.result.length > 2) {
-            if (row1.result.length === row2.result.length) {
-              return true;
-            }
+      return isTableRows(txt, index);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isTableRows(txt: string, index: number, count = 3, _len?: number) {
+    if (!isBreak(txt, index)) {
+      const row = readTableRow(txt, index);
+      if (row.result.length > 2) {
+        if (!_len || row.result.length === _len) {
+          if (count > 1) {
+            return isTableRows(
+              txt,
+              index + row.length,
+              count - 1,
+              row.result.length,
+            );
+          } else {
+            return true;
           }
         }
       }
-    } catch (e) {
-      return false;
     }
   }
 }
@@ -211,12 +225,17 @@ function readTableRow(
         result: result.trim().split(' '),
         length: i - index + 1,
       };
-    } else if (txt[i] === ' ' && txt[i + 1] === ')') {
+    } else if (txt[i] === ' ' && (txt[i + 1] === ')' || txt[i + 1] === '）')) {
       continue;
     } else if (txt[i] === '\n' || txt[i] === '\r') {
       continue;
     } else if (txt[i] !== ' ') {
-      if (isZh(txt, i - 1) && /[a-z]/i.test(txt[i])) {
+      if (
+        isZh(txt, i - 1) &&
+        txt[i - 1] !== '（' &&
+        txt[i - 1] !== '）' &&
+        /[a-z]/i.test(txt[i])
+      ) {
         result += ' ';
       }
     }
@@ -365,6 +384,19 @@ function isSpaceLine(txt: string) {
       if (++result === 2) {
         return true;
       }
+    }
+  }
+}
+
+function isSpaceLinePre(txt: string, index: number) {
+  let result = 0;
+  for (let i = index; i >= 0; i--) {
+    if (txt[i] === '\n') {
+      if (++result === 2) {
+        return true;
+      }
+    } else if (!isSpace(txt, i)) {
+      return false;
     }
   }
 }
