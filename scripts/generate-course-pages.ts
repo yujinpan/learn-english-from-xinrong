@@ -1,8 +1,8 @@
 import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'path';
-import PDFParser from 'pdf2json';
 
+import { getPdfTextContent } from './pdf';
 import { getSources } from './utils';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -20,7 +20,7 @@ function build() {
   const sources = getSources();
 
   sources.forEach(async (item) => {
-    const txt = await readPdfToTxt(item.path);
+    const txt = await getPdfTextContent(item.path);
     const page = parseTxtToPage(txt);
 
     fs.writeFileSync(path.resolve(coursesPath, item.filename + '.txt'), txt);
@@ -40,21 +40,6 @@ function build() {
     path.resolve(coursesPath, 'index.md'),
     `# Courses\n\n${index}`,
   );
-}
-
-function readPdfToTxt(pdf: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const pdfParser = new PDFParser(undefined, true);
-
-    pdfParser.on('pdfParser_dataError', (errData) =>
-      reject(errData.parserError),
-    );
-    pdfParser.on('pdfParser_dataReady', () => {
-      resolve(pdfParser.getRawTextContent());
-    });
-
-    pdfParser.loadPDF(pdf);
-  });
 }
 
 export function parseTxtToPage(txt: string) {
@@ -104,24 +89,12 @@ function isBreak(txt: string, index: number) {
 }
 
 function readBreak(txt: string, index: number): string {
-  for (let i = index + 16; i < txt.length; i++) {
-    if (isBreak(txt, i)) {
-      return txt.slice(index, findNum(txt, i + 16));
-    }
-  }
-
-  throw new Error(`Can not find break ending: ${txt.slice(index)}`);
+  return txt.slice(index, findNum(txt, index + 16));
 
   function findNum(txt: string, index: number) {
     for (let i = index; i < txt.length; i++) {
-      if (!isSpace(txt, i)) {
-        if (/\d/.test(txt[i])) {
-          if (isSpace(txt, i + 1)) {
-            return findNotSpace(txt, i + 1);
-          }
-        } else {
-          return i;
-        }
+      if (/\d/.test(txt[i]) && txt[i + 1] === '\n') {
+        return i + 1;
       }
     }
     return txt.length - 1;
@@ -182,7 +155,7 @@ const statementData = ${JSON.stringify(data)}
 }
 
 function isTable(txt: string, index: number) {
-  if (isSpaceLinePre(txt, index - 1) && !isSpace(txt, index)) {
+  if (txt.slice(index, index + 5) === '中文 原形') {
     try {
       return isTableRows(txt, index);
     } catch (e) {
@@ -217,8 +190,7 @@ function readTableRow(
   let result = '';
   for (let i = index; i < txt.length; i++) {
     if (
-      (txt[i] === '\n' &&
-        (txt.slice(i - 2, i) === ' \r' || txt[i - 1] === ' ')) ||
+      (txt[i] === '\n' && txt[i - 1] !== '；' && /\D/.test(txt[i - 1])) ||
       (txt[i] === ' ' && i === txt.length - 1)
     ) {
       return {
@@ -227,7 +199,7 @@ function readTableRow(
       };
     } else if (txt[i] === ' ' && (txt[i + 1] === ')' || txt[i + 1] === '）')) {
       continue;
-    } else if (txt[i] === '\n' || txt[i] === '\r') {
+    } else if (txt[i] === '\n') {
       continue;
     } else if (txt[i] !== ' ') {
       if (
@@ -302,7 +274,7 @@ function readEn(txt: string, index: number) {
   let result = '';
   for (let i = index; i < txt.length; i++) {
     // eslint-disable-next-line no-misleading-character-class
-    if (/[a-z'\s\w ́]/i.test(txt[i])) {
+    if (/[a-z'\s\w ́´]/i.test(txt[i])) {
       result += txt[i];
     } else {
       break;
@@ -318,17 +290,15 @@ function readEn(txt: string, index: number) {
 
 function readKk(txt: string, index: number, result = '') {
   for (let i = index; i < txt.length; i++) {
-    if (isSpace(txt, i)) continue;
-
     if (!result && txt[i] !== '/') {
-      if (isTwoSpaceNewLine(txt, i - 3)) {
+      if (!isSpace(txt, i - 2) && isSpace(txt, i - 1) && !isSpace(txt, i)) {
         return '';
       } else if (isValid(txt, i)) {
         // "/ju" or "ju/" is valid
       } else {
         break;
       }
-    }
+    } else if (isSpace(txt, i)) continue;
 
     if (isValid(txt, i)) {
       const endingIndex = findEnding(txt, i + 1);
@@ -365,18 +335,6 @@ function isSpace(txt: string, index: number) {
   return /\s/.test(txt[index]);
 }
 
-function isSpaceNotEmpty(txt: string, index: number) {
-  return /[\f\n\r\t\v]/.test(txt[index]);
-}
-
-function isTwoSpace(txt: string, index: number) {
-  return isSpace(txt, index) && isSpace(txt, index + 1);
-}
-
-function isTwoSpaceNewLine(txt: string, index: number) {
-  return isTwoSpace(txt, index) && isSpaceNotEmpty(txt, index + 2);
-}
-
 function isSpaceLine(txt: string) {
   let result = 0;
   for (let i = 0; i < txt.length; i++) {
@@ -388,19 +346,6 @@ function isSpaceLine(txt: string) {
   }
 }
 
-function isSpaceLinePre(txt: string, index: number) {
-  let result = 0;
-  for (let i = index; i >= 0; i--) {
-    if (txt[i] === '\n') {
-      if (++result === 2) {
-        return true;
-      }
-    } else if (!isSpace(txt, i)) {
-      return false;
-    }
-  }
-}
-
 function readSpace(txt: string, index: number) {
   for (let i = index; i < txt.length; i++) {
     if (!isSpace(txt, i)) {
@@ -408,11 +353,4 @@ function readSpace(txt: string, index: number) {
     }
   }
   return txt.slice(index);
-}
-
-function findNotSpace(txt: string, index: number) {
-  for (let i = index; i < txt.length; i++) {
-    if (!isSpace(txt, i)) return i;
-  }
-  return txt.length - 1;
 }

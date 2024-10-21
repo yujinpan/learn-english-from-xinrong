@@ -6,20 +6,14 @@ describe('generate-course-pages', () => {
   it('readBreak', () => {
     expect(
       parseTxtToPage(`
-----------------Page (0) Break----------------
-1 
- 
+----------------
+1
 你好，我是星荣。 
 
 必须做 have to do /hæv/ /tə/ /du/ 
 我必须做这件事情 I have to do it /aɪ/ /hæv/ /tə/ /du/ /ɪt/ 
-
-----------------Page (5) Break----------------
-6 
- 
- 
- 
-
+----------------
+6
 我今`),
     ).toBe(`你好，我是星荣。
 
@@ -84,7 +78,7 @@ const statementData = [{"zh":"我(已经)在那个公司工作了三\\n年了","
       parseTxtToPage(`
 中文 英文 K.K.音标
 我是 I am /aɪ/ /æm/ 
-星荣 Xingrong  
+星荣 Xingrong
 我是星荣 I am Xingrong /aɪ/ /æm/ `),
     ).toBe(
       `<script setup>
@@ -113,7 +107,7 @@ const statementData = [{"zh":"我是","en":"I am","kk":"/aɪ/ /æm"}]
     expect(
       parseTxtToPage(`
 中文 英文 K.K.音标
-星荣 Xingrong  
+星荣 Xingrong
 我是星荣 I am Xingrong /aɪ/  /æm/ `),
     ).toBe(
       `<script setup>
@@ -128,12 +122,12 @@ const statementData = [{"zh":"星荣","en":"Xingrong","kk":""},{"zh":"我是星�
     expect(
       parseTxtToPage(`
 中文 英文 K.K.音标
-星荣 Xingrong  
-我是星荣 I am Xingrong /aɪ/  
-/æm/ `),
+星荣 Xingrong
+我是星荣 I am Xingrong /aɪ/
+/æm/`),
     ).toBe(
       `<script setup>
-const statementData = [{"zh":"星荣","en":"Xingrong","kk":""},{"zh":"我是星荣","en":"I am Xingrong","kk":"/aɪ/  \\n/æm/"}]
+const statementData = [{"zh":"星荣","en":"Xingrong","kk":""},{"zh":"我是星荣","en":"I am Xingrong","kk":"/aɪ/\\n/æm/"}]
 </script>
 
 <StatementGroup :data="statementData" />`,
@@ -172,24 +166,23 @@ const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"l
     expect(
       parseTxtToPage(`
 中文 英文 K.K.音标
-我 I /aɪ/ 
+我 I /aɪ/
 我们自从2020年以来(已经)
-学习英文了 
-we have studied English since 
-2020 
-/wi/ /hæv/ /ˈstʌdid/ /ˈɪŋɡlɪʃ/ /sɪns/ 
-/'twɛnti/ /'twɛnti/ 
-----------------Page (6) Break----------------
-7 
- 
-中文 原形 第三人称单数 过去式 ing形式ed形式 
-想要 want wants wanted wanting wanted 
-想要 want wants wanted wanting wanted 
-是 be（am） is was was was 
-是 be（is ） is was was was 
+学习英文了
+we have studied English since
+2020
+/wi/ /hæv/ /ˈstʌdid/ /ˈɪŋɡlɪʃ/ /sɪns/
+/'twɛnti/ /'twɛnti/
+----------------
+7
+中文 原形 第三人称单数 过去式 ing形式ed形式
+想要 want wants wanted wanting wanted
+想要 want wants wanted wanting wanted
+是 be（am） is was was was
+是 be（is ） is was was was
 `),
     ).toBe(`<script setup>
-const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"我们自从2020年以来(已经)\\n学习英文了","en":"we have studied English since \\n2020","kk":"/wi/ /hæv/ /ˈstʌdid/ /ˈɪŋɡlɪʃ/ /sɪns/ \\n/'twɛnti/ /'twɛnti/"}]
+const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"我们自从2020年以来(已经)\\n学习英文了","en":"we have studied English since\\n2020","kk":"/wi/ /hæv/ /ˈstʌdid/ /ˈɪŋɡlɪʃ/ /sɪns/\\n/'twɛnti/ /'twɛnti/"}]
 </script>
 
 <StatementGroup :data="statementData" />
