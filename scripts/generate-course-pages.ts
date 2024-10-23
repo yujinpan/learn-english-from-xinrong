@@ -51,7 +51,10 @@ export function parseTxtToPage(txt: string) {
     if (isBreak(txt, index)) {
       index += readBreak(txt, index).length;
     } else if (isStatementsTitle(txt, index)) {
+      index += tableTitle.length;
+
       const { result: result1, length } = readStatements(txt, index);
+
       result += result1;
       index += length;
     } else if (isSpace(txt, index)) {
@@ -112,18 +115,25 @@ function isStatementsTitle(txt: string, index: number) {
 function readStatements(
   txt: string,
   index: number,
-): { result: string; length: number } {
+  // mixed table rows
+  _tableColumnsLen?: number,
+): {
+  data: { zh: string; en: string; kk: string }[];
+  result: string;
+  length: number;
+} {
   const data: { zh: string; en: string; kk: string }[] = [];
 
   let i: number;
 
-  for (i = index + tableTitle.length; i < txt.length; i++) {
+  for (i = index; i < txt.length; i++) {
     if (isBreak(txt, i)) {
       i += readBreak(txt, i).length - 1;
     } else if (
       /\n/.test(txt[i - 1]) &&
       !isSpace(txt, i) &&
-      txt.slice(i, i + 5) !== '中文 原形'
+      txt.slice(i, i + 5) !== '中文 原形' &&
+      readTableRow(txt, i).result.length !== _tableColumnsLen
     ) {
       let current = i;
       try {
@@ -144,7 +154,39 @@ function readStatements(
     }
   }
 
+  // Some content is wrong, table rows and statements are mixed
+  for (let j = i; j < txt.length; j++) {
+    if (isBreak(txt, j)) txt = txt.slice(i, j);
+  }
+
+  if (i !== index) {
+    for (let j = i; j < txt.length; j++) {
+      if (txt[j - 1] === '\n') {
+        let tableColumnsLen: number | undefined;
+
+        // remove table first
+        if (isTable(txt, j)) {
+          const table = readTable(txt, j, false);
+          j += table.length;
+          tableColumnsLen = table.result.length;
+        }
+
+        const mixedData = readStatements(
+          txt,
+          j,
+          tableColumnsLen || _tableColumnsLen,
+        );
+
+        if (mixedData.data.length) {
+          data.push(...mixedData.data);
+        }
+        j += mixedData.length;
+      }
+    }
+  }
+
   return {
+    data,
     result: `<script setup>
 const statementData = ${JSON.stringify(data)}
 </script>
@@ -163,7 +205,7 @@ function isTable(txt: string, index: number) {
     }
   }
 
-  function isTableRows(txt: string, index: number, count = 3, _len?: number) {
+  function isTableRows(txt: string, index: number, count = 2, _len?: number) {
     if (!isBreak(txt, index)) {
       const row = readTableRow(txt, index);
       if (row.result.length > 2) {
@@ -191,7 +233,7 @@ function readTableRow(
   for (let i = index; i < txt.length; i++) {
     if (
       (txt[i] === '\n' && txt[i - 1] !== '；' && /\D/.test(txt[i - 1])) ||
-      (txt[i] === ' ' && i === txt.length - 1)
+      i === txt.length - 1
     ) {
       return {
         result: result.trim().split(' '),
@@ -219,6 +261,7 @@ function readTableRow(
 function readTable(
   txt: string,
   index: number,
+  _skipMixed = true,
 ): { result: string; length: number } {
   const { result: head, length } = readTableRow(txt, index);
 
@@ -234,6 +277,19 @@ function readTable(
           body.push(result);
           i += length - 1;
         } else {
+          if (_skipMixed) {
+            const statements = readStatements(txt, i, head.length);
+            if (statements.length) {
+              const { result, length } = readTableRow(
+                txt,
+                i + statements.length,
+              );
+              if (result.length === head.length) {
+                body.push(result);
+                i += i + statements.length + length;
+              }
+            }
+          }
           break;
         }
       } catch (e) {
@@ -258,7 +314,7 @@ function readTable(
 
 function isZh(txt: string, index: number) {
   // eslint-disable-next-line no-control-regex
-  return /[^\x00-\xff]/.test(txt[index]);
+  return /[\u4e00-\u9fa5]/.test(txt[index]);
 }
 
 function readZh(txt: string, index: number) {

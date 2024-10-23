@@ -162,6 +162,22 @@ const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"l
 |计划|plan|plans|planned|planning|planned|`);
   });
 
+  it('readTable with 4 columns', () => {
+    expect(
+      parseTxtToPage(`中文 原形 第三人称单数 过去式
+想要 want wants wanted 
+喜欢 like likes liked
+问题 that question /ðæt/ /'kwɛstʃən/
+(I，过去时)be was /wəz/
+`),
+    ).toBe(`|中文|原形|第三人称单数|过去式|
+|-|-|-|-|
+|想要|want|wants|wanted|
+|喜欢|like|likes|liked|
+问题 that question /ðæt/ /'kwɛstʃən/
+(I，过去时)be was /wəz/`);
+  });
+
   it('read statements and table', () => {
     expect(
       parseTxtToPage(`
@@ -193,5 +209,30 @@ const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"我们自从202
 |想要|want|wants|wanted|wanting|wanted|
 |是|be（am）|is|was|was|was|
 |是|be（is）|is|was|was|was|`);
+  });
+
+  it('read statements and table with mixins', () => {
+    expect(
+      parseTxtToPage(`
+中文 英文 K.K.音标
+我 I /aɪ/
+喜欢 like /laɪk/
+----------------
+7
+中文 原形 第三人称单数 过去式
+想要 want wants wanted
+喜欢 like /laɪk/
+想要 want wants wanted
+`),
+    ).toBe(`<script setup>
+const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"like","kk":"/laɪk/"},{"zh":"喜欢","en":"like","kk":"/laɪk/"}]
+</script>
+
+<StatementGroup :data="statementData" />
+
+|中文|原形|第三人称单数|过去式|
+|-|-|-|-|
+|想要|want|wants|wanted|
+|想要|want|wants|wanted|`);
   });
 });
