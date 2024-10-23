@@ -191,9 +191,7 @@ const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"l
     ).toBe(`|中文|原形|第三人称单数|过去式|
 |-|-|-|-|
 |想要|want|wants|wanted|
-|喜欢|like|likes|liked|
-问题 that question /ðæt/ /'kwɛstʃən/
-(I，过去时)be was /wəz/`);
+|喜欢|like|likes|liked|`);
   });
 
   it('read statements and table', () => {
@@ -256,5 +254,22 @@ const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"l
 |想要|want|wants|wanted|
 |想要|want|wants|wanted|
 |想要|want|wants|wanted|`);
+  });
+
+  it('readTable can read column [ing 形式]', () => {
+    expect(
+      parseTxtToPage(`中文 原形 第三人称单数 过去式 ing 形式 ed形式
+想要 want wants wanted wanting wanted 
+喜欢 like likes liked liking liked 
+有；
+(+to )不得不 have has had having had 
+计划 plan plans planned planning planned 
+`),
+    ).toBe(`|中文|原形|第三人称单数|过去式|ing形式|ed形式|
+|-|-|-|-|-|-|
+|想要|want|wants|wanted|wanting|wanted|
+|喜欢|like|likes|liked|liking|liked|
+|有；(+to)不得不|have|has|had|having|had|
+|计划|plan|plans|planned|planning|planned|`);
   });
 });

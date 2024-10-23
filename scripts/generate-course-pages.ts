@@ -244,7 +244,12 @@ function readTableRow(
         result: result.trim().split(' '),
         length: i - index + 1,
       };
-    } else if (txt[i] === ' ' && (txt[i + 1] === ')' || txt[i + 1] === '）')) {
+    } else if (
+      txt[i] === ' ' &&
+      (txt[i + 1] === ')' ||
+        txt[i + 1] === '）' ||
+        (txt.slice(i - 3, i) === 'ing' && txt.slice(i + 1, i + 3) === '形式'))
+    ) {
       continue;
     } else if (txt[i] === '\n') {
       continue;
