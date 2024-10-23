@@ -155,8 +155,13 @@ function readStatements(
   }
 
   // Some content is wrong, table rows and statements are mixed
+  let count = 0;
   for (let j = i; j < txt.length; j++) {
-    if (isBreak(txt, j)) txt = txt.slice(i, j);
+    if (isBreak(txt, j)) {
+      txt = txt.slice(0, j);
+      if (count > 1) break;
+      count++;
+    }
   }
 
   if (i !== index) {
@@ -168,7 +173,7 @@ function readStatements(
         if (isTable(txt, j)) {
           const table = readTable(txt, j, false);
           j += table.length;
-          tableColumnsLen = table.result.length;
+          tableColumnsLen = table.head.length;
         }
 
         const mixedData = readStatements(
@@ -262,12 +267,14 @@ function readTable(
   txt: string,
   index: number,
   _skipMixed = true,
-): { result: string; length: number } {
-  const { result: head, length } = readTableRow(txt, index);
+  _headRow?: { result: string[]; length: number },
+): { head: string[]; body: string[][]; result: string; length: number } {
+  const headRow = _headRow || readTableRow(txt, index);
+  const { result: head, length } = headRow;
 
   const body: string[][] = [];
   let i: number;
-  for (i = index + length; i < txt.length; i++) {
+  for (i = index + (_headRow ? 0 : length); i < txt.length; i++) {
     if (isBreak(txt, i)) {
       i += readBreak(txt, i).length - 1;
     } else {
@@ -280,13 +287,11 @@ function readTable(
           if (_skipMixed) {
             const statements = readStatements(txt, i, head.length);
             if (statements.length) {
-              const { result, length } = readTableRow(
-                txt,
-                i + statements.length,
-              );
-              if (result.length === head.length) {
-                body.push(result);
-                i += i + statements.length + length;
+              const index = i + statements.length;
+              const table = readTable(txt, index, _skipMixed, headRow);
+              if (table.head.length === head.length) {
+                body.push(...table.body);
+                i += index + table.length;
               }
             }
           }
@@ -307,6 +312,8 @@ function readTable(
     .join('');
 
   return {
+    head,
+    body,
     result: tableHead + tableDivide + tableBody,
     length: i - index,
   };

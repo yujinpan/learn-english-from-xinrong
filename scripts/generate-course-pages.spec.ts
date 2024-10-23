@@ -214,6 +214,7 @@ const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"我们自从202
   it('read statements and table with mixins', () => {
     expect(
       parseTxtToPage(`
+test123
 中文 英文 K.K.音标
 我 I /aɪ/
 喜欢 like /laɪk/
@@ -223,8 +224,10 @@ const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"我们自从202
 想要 want wants wanted
 喜欢 like /laɪk/
 想要 want wants wanted
+想要 want wants wanted
 `),
-    ).toBe(`<script setup>
+    ).toBe(`test123
+<script setup>
 const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"like","kk":"/laɪk/"},{"zh":"喜欢","en":"like","kk":"/laɪk/"}]
 </script>
 
@@ -232,6 +235,7 @@ const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"l
 
 |中文|原形|第三人称单数|过去式|
 |-|-|-|-|
+|想要|want|wants|wanted|
 |想要|want|wants|wanted|
 |想要|want|wants|wanted|`);
   });
