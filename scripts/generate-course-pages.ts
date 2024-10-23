@@ -133,6 +133,7 @@ function readStatements(
       /\n/.test(txt[i - 1]) &&
       !isSpace(txt, i) &&
       txt.slice(i, i + 5) !== '中文 原形' &&
+      txt.slice(i, i + 5) !== '中⽂ 原形' &&
       readTableRow(txt, i).result.length !== _tableColumnsLen
     ) {
       let current = i;
@@ -158,8 +159,10 @@ function readStatements(
   let count = 0;
   for (let j = i; j < txt.length; j++) {
     if (isBreak(txt, j)) {
-      txt = txt.slice(0, j);
-      if (count > 1) break;
+      if (count > 1) {
+        txt = txt.slice(0, j);
+        break;
+      }
       count++;
     }
   }
@@ -202,7 +205,11 @@ const statementData = ${JSON.stringify(data)}
 }
 
 function isTable(txt: string, index: number) {
-  if (txt.slice(index, index + 5) === '中文 原形') {
+  // [文] is difference
+  if (
+    txt.slice(index, index + 5) === '中文 原形' ||
+    txt.slice(index, index + 5) === '中⽂ 原形'
+  ) {
     try {
       return isTableRows(txt, index);
     } catch (e) {
@@ -248,7 +255,8 @@ function readTableRow(
       txt[i] === ' ' &&
       (txt[i + 1] === ')' ||
         txt[i + 1] === '）' ||
-        (txt.slice(i - 3, i) === 'ing' && txt.slice(i + 1, i + 3) === '形式'))
+        ((txt.slice(i - 3, i) === 'ing' || txt.slice(i - 2, i) === 'ed') &&
+          txt.slice(i + 1, i + 3) === '形式'))
     ) {
       continue;
     } else if (txt[i] === '\n') {

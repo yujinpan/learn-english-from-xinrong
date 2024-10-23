@@ -258,18 +258,25 @@ const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"l
 
   it('readTable can read column [ing 形式]', () => {
     expect(
-      parseTxtToPage(`中文 原形 第三人称单数 过去式 ing 形式 ed形式
-想要 want wants wanted wanting wanted 
-喜欢 like likes liked liking liked 
-有；
-(+to )不得不 have has had having had 
-计划 plan plans planned planning planned 
+      parseTxtToPage(`
+中文 英文 K.K.音标
+我 I /aɪ/
+喜欢 like /laɪk/
+----------------
+7
+中⽂ 原形 第三⼈称单数 过去式 ing 形式 ed 形式
+想要 want wants wanted wanting wanted
+想要 want wants wanted wanting wanted
 `),
-    ).toBe(`|中文|原形|第三人称单数|过去式|ing形式|ed形式|
+    ).toBe(`<script setup>
+const statementData = [{"zh":"我","en":"I","kk":"/aɪ/"},{"zh":"喜欢","en":"like","kk":"/laɪk/"}]
+</script>
+
+<StatementGroup :data="statementData" />
+
+|中⽂|原形|第三⼈称单数|过去式|ing形式|ed形式|
 |-|-|-|-|-|-|
 |想要|want|wants|wanted|wanting|wanted|
-|喜欢|like|likes|liked|liking|liked|
-|有；(+to)不得不|have|has|had|having|had|
-|计划|plan|plans|planned|planning|planned|`);
+|想要|want|wants|wanted|wanting|wanted|`);
   });
 });
