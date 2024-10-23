@@ -134,6 +134,24 @@ const statementData = [{"zh":"星荣","en":"Xingrong","kk":""},{"zh":"我是星�
     );
   });
 
+  it('readStatements can read with ? or ...', () => {
+    expect(
+      parseTxtToPage(`
+中文 英文 K.K.音标
+星荣 Xingrong /xr/
+星荣? Xingrong? /xr/
+星荣？ Xingrong？ /xr/
+星荣… Xingrong… /xr/
+星荣, Xingrong, /xr/`),
+    ).toBe(
+      `<script setup>
+const statementData = [{"zh":"星荣","en":"Xingrong","kk":"/xr/"},{"zh":"星荣?","en":"Xingrong?","kk":"/xr/"},{"zh":"星荣？","en":"Xingrong？","kk":"/xr/"},{"zh":"星荣…","en":"Xingrong…","kk":"/xr/"},{"zh":"星荣,","en":"Xingrong,","kk":"/xr/"}]
+</script>
+
+<StatementGroup :data="statementData" />`,
+    );
+  });
+
   it('readTable', () => {
     expect(
       parseTxtToPage(`

@@ -337,7 +337,7 @@ function readEn(txt: string, index: number) {
   let result = '';
   for (let i = index; i < txt.length; i++) {
     // eslint-disable-next-line no-misleading-character-class
-    if (/[a-z'\s\w ́´]/i.test(txt[i])) {
+    if (/[a-z'\s\w ́´？?…,]/i.test(txt[i])) {
       result += txt[i];
     } else {
       break;
